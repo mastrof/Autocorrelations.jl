@@ -1,6 +1,6 @@
-using Autocovariances
+using Autocorrelations
 using Test
 
-@testset "Autocovariances.jl" begin
+@testset "Autocorrelations.jl" begin
     # Write your tests here.
 end
