@@ -21,9 +21,9 @@ but arbitrary `lags` can be optionally specified.
 """
 function acf(x, lags=default_lags(x); demean=false, normalize=false)
     if size(x,1) < THRESHOLD
-        dotacf(x, lags; demean, normalize)
+        dotacf(x, lags; demean=demean, normalize=normalize)
     else
-        fftacf(x, lags; demean, normalize)
+        fftacf(x, lags; demean=demean, normalize=normalize)
     end
 end
 
@@ -33,14 +33,14 @@ function fftacf(x::AbstractVector{<:Number}, lags=default_lags(x);
 )
     S = float(eltype(x))
     out = Vector{S}(undef, length(lags))
-    fftacf!(out, x, lags; demean, normalize)
+    fftacf!(out, x, lags; demean=demean, normalize=normalize)
 end
 function fftacf(x::AbstractVector{T}, lags=default_lags(x);
     demean::Bool = false, normalize::Bool = false
 ) where {T<:Union{AbstractVector,NTuple}}
     S = float(eltype(eltype(x)))
     out = Vector{S}(undef, length(lags))
-    fftacf!(out, x, lags; demean, normalize)
+    fftacf!(out, x, lags; demean=demean, normalize=normalize)
 end
 
 function fftacf!(r::AbstractVector, x::AbstractVector, lags;
@@ -49,8 +49,8 @@ function fftacf!(r::AbstractVector, x::AbstractVector, lags;
     do_checks(lags, x, r)
     m = length(lags)
     lx = length(x)
-    demean && demean!(x)
-    A = conv(x, reverse(x))
+    y = demean ? subtract_mean(x) : x
+    A = conv(y, reverse(y))
     for k in 1:m
         d = lags[k]
         r[k] = A[d+lx] / (lx-d)
@@ -68,8 +68,11 @@ function fftacf!(r::AbstractVector, x::AbstractVector{T}, lags;
     m = length(lags)
     lx = length(x)
     y = [getindex.(x, i) for i in eachindex(first(x))]
-    demean && demean!(y)
-    A = sum([conv(s, reverse(s)) for s in y])
+    demean && subtract_mean!(y)
+    A = zeros(eltype(r), 2lx-1)
+    for s in y
+        A .+= conv(s, reverse(s))
+    end
     for k in 1:m
         d = lags[k]
         r[k] = A[d+lx] / (lx-d)
@@ -87,14 +90,14 @@ function dotacf(x::AbstractVector{<:Number}, lags=default_lags(x);
 )
     S = float(eltype(x))
     out = Vector{S}(undef, length(lags))
-    dotacf!(out, x, lags; demean, normalize)
+    dotacf!(out, x, lags; demean=demean, normalize=normalize)
 end
 function dotacf(x::AbstractVector{T}, lags=default_lags(x);
     demean::Bool = false, normalize::Bool = false
 ) where {T<:Union{AbstractVector,NTuple}}
     S = float(eltype(eltype(x)))
     out = Vector{S}(undef, length(lags))
-    dotacf!(out, x, lags; demean, normalize)
+    dotacf!(out, x, lags; demean=demean, normalize=normalize)
 end
 
 function dotacf!(r::AbstractVector, x::AbstractVector, lags;
@@ -103,13 +106,13 @@ function dotacf!(r::AbstractVector, x::AbstractVector, lags;
     do_checks(lags, x, r)
     m = length(lags)
     lx = length(x)
-    demean && demean!(x)
+    y = demean ? subtract_mean(x) : x
     for k in 1:m
         d = lags[k]
-        r[k] = autodot(x, lx, d) / (lx-d)
+        r[k] = autodot(y, lx, d) / (lx-d)
     end
     if normalize
-        r0 = autodot(x, lx, 0) / lx
+        r0 = autodot(y, lx, 0) / lx
         r ./= r0
     end
     return r
@@ -121,13 +124,18 @@ end
 autodot(x::AbstractVector{<:Union{Float32,Float64}}, lx::Int, l::Int) = dot(x, 1:(lx-l), x, (1+l):lx)
 autodot(x::AbstractVector, lx::Int, l::Int) = dot(view(x, 1:(lx-l)), view(x, (1+l):lx))
 
-function demean!(x::AbstractVector{<:Number})
+function subtract_mean(x::AbstractVector)
+    out = deepcopy(x)
+    subtract_mean!(out)
+    return out
+end
+function subtract_mean!(x::AbstractVector{<:Number})
     mx = mean(x)
     for k in eachindex(x)
         x[k] -= mx
     end
 end
-demean!(x::AbstractVector{<:AbstractVector{<:Number}}) = demean!.(x)
+subtract_mean!(x::AbstractVector{<:AbstractVector{<:Number}}) = subtract_mean!.(x)
 
 function do_checks(lags, x, r)
     lx = length(x)
