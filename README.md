@@ -6,4 +6,4 @@ Fast evaluation of autocorrelation functions
 ```math
 f_{XX}(\tau) = \mathbb{E}\left[X(t)X(t+\tau)\right]
 ```
-for scalar and vectorial processes $X$.
+for scalar and vector processes $X$.
