@@ -124,8 +124,15 @@ end
 autodot(x::AbstractVector{<:Union{Float32,Float64}}, lx::Int, l::Int) = dot(x, 1:(lx-l), x, (1+l):lx)
 autodot(x::AbstractVector, lx::Int, l::Int) = dot(view(x, 1:(lx-l)), view(x, (1+l):lx))
 
+function subtract_mean(x::AbstractVector{<:Number})
+    S = float(eltype(x))
+    out = S.(x)
+    subtract_mean!(out)
+    return out
+end
 function subtract_mean(x::AbstractVector)
-    out = deepcopy(x)
+    S = float(eltype(eltype(x)))
+    out = map.(S, x)
     subtract_mean!(out)
     return out
 end
@@ -135,7 +142,7 @@ function subtract_mean!(x::AbstractVector{<:Number})
         x[k] -= mx
     end
 end
-subtract_mean!(x::AbstractVector{<:AbstractVector{<:Number}}) = subtract_mean!.(x)
+subtract_mean!(x::AbstractVector) = subtract_mean!.(x)
 
 function do_checks(lags, x, r)
     lx = length(x)
