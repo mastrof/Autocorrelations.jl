@@ -67,7 +67,7 @@ using Test
             for demean in (true, false), normalize in (true, false)
                 a = dotacf(x; demean=demean, normalize=normalize)
                 b = fftacf(x; demean=demean, normalize=normalize)
-                @test dotacf(x; demean, normalize) ≈ fftacf(x; demean, normalize)
+                @test a ≈ b
             end
         end
     end
