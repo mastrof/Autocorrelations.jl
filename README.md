@@ -22,6 +22,16 @@ of the form
 with optional arguments to subtract the mean of the process or to
 normalize the resulting autocorrelation function.
 
+`acf(x; demean=true)`:
+```math
+\hat{f}_\tau = \dfrac{1}{T-\tau} \sum_{t=1}^{T-\tau} (X_t-\bar{X}) (X_{t+\tau}-\bar{X}),
+\qquad \tau \in [0, T-1]
+```
+`acf(x; normalize=true)`:
+```math
+\hat{f}_\tau = \dfrac{1}{\hat{f}_0(T-\tau)} \sum_{t=1}^{T-\tau} X_t X_{t+\tau},
+\qquad \tau \in [0, T-1]
+```
 
 ```julia
 
