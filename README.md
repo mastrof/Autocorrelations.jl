@@ -11,3 +11,13 @@ for scalar processes $X$ or
 f(\tau) = \mathbb{E}\left[\mathbf{X}(t)\cdot\mathbf{X}(t+\tau)\right]
 ```
 for vector processes $\mathbf{X}$.
+
+
+Specifically, the `acf` function evaluates autocorrelation estimates
+of the form
+```math
+\hat{f}_\tau = \dfrac{1}{T-\tau} \sum_{t=1}^{T-\tau} X_t X_{t+\tau},
+\qquad \tau \in [0, T-1]
+```
+with optional arguments to subtract the mean of the process or to
+normalize the resulting autocorrelation function.
