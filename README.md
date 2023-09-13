@@ -4,6 +4,10 @@
 
 Fast evaluation of autocorrelation functions
 ```math
-f_{XX}(\tau) = \mathbb{E}\left[X(t)X(t+\tau)\right]
+f(\tau) = \mathbb{E}\left[X(t)X(t+\tau)\right]
 ```
-for scalar and vector processes $X$.
+for scalar processes $X$ or
+```math
+f(\tau) = \mathbb{E}\left[\mathbf{X}(t)\cdot\mathbf{X}(t+\tau)\right]
+```
+for vector processes $\mathbf{X}$.
