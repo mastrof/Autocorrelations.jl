@@ -1,4 +1,5 @@
 using Autocorrelations
+using Statistics: mean, var
 using Test
 
 @testset "Autocorrelations.jl" begin
@@ -58,6 +59,58 @@ using Test
                 f_raw[1+k] += x[s]*x[s+k]
             end
             f_raw[1+k] /= (n-k)
+        end
+        @test f ≈ f_raw
+
+        # with mean subtraction
+        n = 100
+        t = 1:n
+        ω = 2π / 20
+        x = @. sin(ω*t)
+        f = acf(x; demean=true)
+        k = t .- 1
+        xm = mean(x)
+        f_raw = zeros(n)
+        for k in 0:n-1
+            for s in 1:(n-k)
+                f_raw[1+k] += (x[s]-xm)*(x[s+k]-xm)
+            end
+            f_raw[1+k] /= (n-k)
+        end
+        @test f ≈ f_raw
+
+        # with normalization
+        n = 100
+        t = 1:n
+        ω = 2π / 20
+        x = @. sin(ω*t)
+        f = acf(x; normalize=true)
+        k = t .- 1
+        f_raw = zeros(n)
+        for k in 0:n-1
+            for s in 1:(n-k)
+                f_raw[1+k] += x[s]*x[s+k]
+            end
+            f_raw[1+k] /= (n-k)
+        end
+        f_raw ./= f_raw[1]
+        @test f ≈ f_raw
+
+        # with mean subtraction and normalization
+        n = 100
+        t = 1:n
+        ω = 2π / 20
+        x = @. sin(ω*t)
+        f = acf(x; demean=true, normalize=true)
+        k = t .- 1
+        xm = mean(x)
+        xv = var(x)*(n-1)/n
+        f_raw = zeros(n)
+        for k in 0:n-1
+            for s in 1:(n-k)
+                f_raw[1+k] += (x[s]-xm)*(x[s+k]-xm)
+            end
+            f_raw[1+k] /= (xv*(n-k))
         end
         @test f ≈ f_raw
     end
