@@ -17,7 +17,7 @@ using Test
     @test length(f) == length(lags)
     lags = 1:2:11
     @test_throws ErrorException acf(x, lags)
-    for AcfFunc! in (dotacf!, fftacf!)
+    for AcfFunc! in (acf!, dotacf!, fftacf!)
         x = 1:10
         lags = 0:size(x,1)-1
         f = acf(x, lags)

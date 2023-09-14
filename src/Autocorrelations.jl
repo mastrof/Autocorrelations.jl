@@ -4,7 +4,7 @@ using DSP: conv
 using LinearAlgebra: dot
 using Statistics: mean
 
-export acf, fftacf, fftacf!, dotacf, dotacf!
+export acf, acf!, fftacf, fftacf!, dotacf, dotacf!
 
 global const THRESHOLD = 1024
 
@@ -18,6 +18,9 @@ but arbitrary `lags` can be optionally specified.
 **Keywords**
 - `demean`: whether to subtract the mean of `x` before evaluating the acf
 - `normalize`: whether to normalize the acf to its lag-0 value
+
+When `length(x) < 1024`, a raw computation (`dotacf`) is used,
+whereas a FFT-based algorithm is used for larger arrays (`fftacf`).
 """
 function acf(x, lags=default_lags(x); demean=false, normalize=false)
     if size(x,1) < THRESHOLD
@@ -27,7 +30,25 @@ function acf(x, lags=default_lags(x); demean=false, normalize=false)
     end
 end
 
+"""
+    acf!(r, x, lags; demean=false, normalize=false)
+Evaluate the autocorrelation of `x` at time `lags` in-place and store output in `r`.
+See `acf`.
+For this in-place version, `lags` *must* be specified, and `length(r)==length(lags)`.
+"""
+function acf!(r, x, lags; demean=false, normalize=false)
+    if size(x,1) < THRESHOLD
+        dotacf!(r, x, lags; demean=demean, normalize=normalize)
+    else
+        fftacf!(r, x, lags; demean=demean, normalize=normalize)
+    end
+end
+
 #== Autocovariance function with FFT ==#
+"""
+    fftacf(x [, lags]; demean=false, normalize=false)
+Evaluate the autocorrelation of signal `x` with a FFT-based algorithm (see `acf`).
+"""
 function fftacf(x::AbstractVector{<:Number}, lags=default_lags(x);
     demean::Bool = false, normalize::Bool = false
 )
@@ -85,6 +106,11 @@ function fftacf!(r::AbstractVector, x::AbstractVector{T}, lags;
 end
 
 #== Autocovariance function with dot product ==#
+"""
+    dotacf(x [, lags]; demean=false, normalize=false)
+Evaluate the autocorrelation of signal `x` with a dot-product-based
+algorithm (see `acf`).
+"""
 function dotacf(x::AbstractVector{<:Number}, lags=default_lags(x);
     demean::Bool = false, normalize::Bool = false
 )
