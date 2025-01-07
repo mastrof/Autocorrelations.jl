@@ -1,7 +1,7 @@
 name = "Autocorrelations"
 uuid = "b9118d5e-f165-4cbd-b2ae-b030566b7b26"
 authors = ["Riccardo Foffi <riccardo.foffi@protonmail.com> and contributors"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
